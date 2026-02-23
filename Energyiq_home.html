@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnergyIQ — Smart Campus Energy Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b14;--surface:#0e1420;--surface2:#151d2e;--surface3:#1c2638;
+  --border:#1e2d45;--border2:#243450;
+  --accent:#00e5ff;--accent2:#7c3aed;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --text:#e2e8f0;--muted:#4a6080;--muted2:#64748b;
+  --font:'Syne',sans-serif;--mono:'Space Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;}
+
+/* ── GRID BG ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,.018) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,255,.018) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+
+/* ── HEADER ── */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:64px;
+  background:rgba(7,11,20,.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.logo-text{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+.logo-text span{color:var(--accent);}
+nav{display:flex;align-items:center;gap:32px;}
+nav a{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);text-decoration:none;transition:color .2s;}
+nav a:hover{color:var(--accent);}
+.nav-cta{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);
+  color:var(--accent);padding:8px 18px;border-radius:22px;
+  font-family:var(--mono);font-size:10px;letter-spacing:1.5px;
+  text-decoration:none;transition:all .2s;
+}
+.nav-cta:hover{background:rgba(0,229,255,.15);border-color:var(--accent);}
+
+/* ── HERO ── */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:120px 48px 80px;overflow:hidden;
+}
+/* Radial glow behind hero */
+.hero::after{
+  content:'';position:absolute;top:20%;left:50%;transform:translateX(-50%);
+  width:900px;height:600px;
+  background:radial-gradient(ellipse at center,rgba(0,229,255,.06) 0%,rgba(124,58,237,.04) 40%,transparent 70%);
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;text-align:center;max-width:860px;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.18);
+  color:var(--accent);padding:6px 16px;border-radius:20px;
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:32px;animation:fadeUp .6s ease both;
+}
+.badge-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:blink 1.4s infinite;}
+.hero h1{
+  font-size:clamp(48px,7vw,88px);font-weight:800;line-height:1.02;
+  letter-spacing:-2px;margin-bottom:28px;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero h1 .line2{color:var(--accent);}
+.hero h1 .line3{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:17px;line-height:1.7;color:var(--muted2);max-width:560px;
+  margin:0 auto 48px;font-weight:400;
+  animation:fadeUp .6s .2s ease both;
+}
+.hero-actions{
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+  animation:fadeUp .6s .3s ease both;
+}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--accent),#00b8d4);
+  color:#070b14;padding:14px 32px;border-radius:28px;
+  font-family:var(--mono);font-size:11px;letter-spacing:1.5px;font-weight:700;
+  text-decoration:none;transition:all .25s;
+  box-shadow:0 0 32px rgba(0,229,255,.3);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(0,229,255,.45);}
+.btn-primary .arrow{transition:transform .2s;}
+.btn-primary:hover .arrow{transform:translateX(4px);}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text);padding:13px 28px;border-radius:28px;
+  font-family:var(--mono);font-size:11px;letter-spacing:1.5px;
+  text-decoration:none;transition:all .2s;
+}
+.btn-secondary:hover{border-color:rgba(0,229,255,.4);color:var(--accent);}
+
+/* ── HERO STATS ROW ── */
+.hero-stats{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  margin-top:72px;border:1px solid var(--border);border-radius:16px;
+  background:var(--surface);overflow:hidden;
+  animation:fadeUp .6s .45s ease both;
+}
+.hstat{
+  padding:22px 36px;text-align:center;flex:1;
+  border-right:1px solid var(--border);position:relative;
+}
+.hstat:last-child{border-right:none;}
+.hstat-val{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff;line-height:1;margin-bottom:6px;}
+.hstat-val span{font-size:13px;color:var(--accent);}
+.hstat-lbl{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+.hstat-note{font-size:10px;color:var(--green);font-family:var(--mono);margin-top:3px;}
+
+/* ── DASHBOARD PREVIEW ── */
+.preview-section{
+  position:relative;z-index:1;padding:60px 48px 100px;text-align:center;
+}
+.preview-frame{
+  position:relative;margin:40px auto 0;max-width:1000px;
+  border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 80px rgba(0,229,255,.06);
+  animation:fadeUp .7s .1s ease both;
+}
+.preview-bar{
+  background:var(--surface2);padding:10px 16px;
+  display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);
+}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#ef4444;}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#f59e0b;}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#10b981;}
+.preview-url{
+  flex:1;background:var(--surface3);border:1px solid var(--border);
+  border-radius:5px;padding:4px 12px;
+  font-family:var(--mono);font-size:9px;color:var(--muted2);text-align:center;
+}
+.preview-body{
+  background:var(--surface);min-height:420px;padding:0;
+  display:grid;grid-template-columns:200px 1fr;
+}
+.prev-sidebar{
+  background:#0a0f1a;border-right:1px solid var(--border);padding:16px;
+}
+.prev-sb-room{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:7px;margin-bottom:4px;
+}
+.prev-sb-room.active{background:rgba(0,229,255,.06);border-left:2px solid var(--accent);padding-left:8px;}
+.prev-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.prev-name{font-size:10px;font-weight:600;flex:1;}
+.prev-w{font-family:var(--mono);font-size:9px;}
+.prev-main{padding:16px;}
+.prev-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;
+}
+.prev-stat{padding:10px 14px;border-right:1px solid var(--border);}
+.prev-stat:last-child{border-right:none;}
+.prev-stat-v{font-family:var(--mono);font-size:16px;font-weight:700;}
+.prev-stat-l{font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+.prev-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.prev-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:9px;padding:12px;
+}
+.prev-card.crit{border-color:rgba(239,68,68,.3);}
+.prev-card.high{border-color:rgba(245,158,11,.25);}
+.prev-cn{font-size:10px;font-weight:700;margin-bottom:2px;}
+.prev-cl{font-size:8px;color:var(--muted2);font-family:var(--mono);}
+.prev-cw{font-family:var(--mono);font-size:18px;font-weight:700;margin:8px 0 3px;}
+.prev-cbar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:8px;}
+.prev-cfill{height:100%;border-radius:1px;}
+.prev-chips{display:flex;flex-wrap:wrap;gap:3px;}
+.prev-chip{
+  background:var(--surface3);border:1px solid var(--border);
+  border-radius:3px;padding:2px 5px;font-size:7px;color:var(--muted2);font-family:var(--mono);
+}
+
+/* ── SECTIONS SHARED ── */
+section{position:relative;z-index:1;}
+.section-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:9px;letter-spacing:2.5px;
+  color:var(--accent);text-transform:uppercase;margin-bottom:14px;
+}
+.section-tag::before{content:'';width:20px;height:1px;background:var(--accent);}
+.section-title{font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:18px;}
+.section-sub{font-size:16px;color:var(--muted2);line-height:1.7;max-width:520px;}
+
+/* ── FEATURES ── */
+.features{padding:80px 48px 100px;}
+.features-header{text-align:center;margin-bottom:64px;}
+.features-header .section-sub{margin:0 auto;}
+.features-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;max-width:1100px;margin:0 auto;
+}
+.feat{
+  background:var(--surface);padding:36px 32px;
+  transition:background .22s;cursor:default;position:relative;overflow:hidden;
+}
+.feat::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  opacity:0;transition:opacity .22s;
+}
+.feat:hover{background:var(--surface2);}
+.feat:hover::before{opacity:1;}
+.feat-icon{font-size:28px;margin-bottom:18px;}
+.feat-title{font-size:15px;font-weight:700;margin-bottom:10px;}
+.feat-desc{font-size:13px;color:var(--muted2);line-height:1.65;}
+.feat-tag{
+  display:inline-flex;margin-top:16px;
+  background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);
+  color:var(--accent);padding:3px 9px;border-radius:4px;
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;
+}
+
+/* ── HOW IT WORKS ── */
+.how{
+  padding:80px 48px 100px;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+  max-width:1200px;margin:0 auto;
+}
+.how-steps{display:flex;flex-direction:column;gap:0;}
+.step{
+  display:flex;gap:20px;padding:24px 0;
+  border-bottom:1px solid var(--border);position:relative;
+}
+.step:last-child{border-bottom:none;}
+.step-num{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;
+  transition:all .2s;
+}
+.step:hover .step-num{background:rgba(0,229,255,.08);border-color:var(--accent);}
+.step-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.step-desc{font-size:13px;color:var(--muted2);line-height:1.6;}
+.how-visual{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:28px;position:relative;overflow:hidden;
+}
+.how-visual::before{
+  content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,229,255,.08),transparent 70%);
+  pointer-events:none;
+}
+.vis-hdr{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:18px;}
+.vis-rooms{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.vis-room{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+}
+.vis-rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.vis-rname{font-size:11px;font-weight:600;flex:1;}
+.vis-rbar{flex:2;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.vis-rfill{height:100%;border-radius:2px;transition:width 1s ease;}
+.vis-rw{font-family:var(--mono);font-size:10px;color:var(--muted2);min-width:52px;text-align:right;}
+.vis-ai{
+  background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.18);
+  border-radius:9px;padding:12px 14px;display:flex;gap:8px;align-items:flex-start;
+}
+.vis-ai-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.vis-ai-text{font-size:11px;color:#a78bfa;line-height:1.5;}
+.vis-ai-text strong{color:#c4b5fd;}
+
+/* ── METRICS ── */
+.metrics{padding:80px 48px 100px;text-align:center;}
+.metrics-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;max-width:900px;margin:48px auto 0;
+}
+.metric{
+  background:var(--surface);padding:40px 24px;
+  transition:background .2s;
+}
+.metric:hover{background:var(--surface2);}
+.metric-val{
+  font-family:var(--mono);font-size:36px;font-weight:700;
+  line-height:1;color:#fff;margin-bottom:8px;
+}
+.metric-val .unit{font-size:16px;color:var(--accent);}
+.metric-lbl{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;}
+.metric-note{font-size:11px;color:var(--green);margin-top:5px;font-family:var(--mono);}
+
+/* ── CTA ── */
+.cta-section{
+  padding:80px 48px 120px;text-align:center;position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'';position:absolute;bottom:-100px;left:50%;transform:translateX(-50%);
+  width:700px;height:400px;
+  background:radial-gradient(ellipse at center,rgba(124,58,237,.1) 0%,rgba(0,229,255,.04) 40%,transparent 70%);
+  pointer-events:none;
+}
+.cta-inner{position:relative;z-index:1;}
+.cta-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:64px 48px;max-width:700px;margin:0 auto;
+  position:relative;overflow:hidden;
+}
+.cta-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent),var(--accent2));
+}
+.cta-box h2{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-1px;margin-bottom:16px;}
+.cta-box p{font-size:15px;color:var(--muted2);line-height:1.7;margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;}
+.cta-btns{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.btn-big{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--accent),#00b8d4);
+  color:#070b14;padding:16px 36px;border-radius:30px;
+  font-family:var(--mono);font-size:12px;letter-spacing:1.5px;font-weight:700;
+  text-decoration:none;transition:all .25s;
+  box-shadow:0 0 40px rgba(0,229,255,.35);
+}
+.btn-big:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(0,229,255,.5);}
+.btn-big .arrow{font-size:15px;transition:transform .2s;}
+.btn-big:hover .arrow{transform:translateX(5px);}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text);padding:15px 30px;border-radius:30px;
+  font-family:var(--mono);font-size:12px;letter-spacing:1.5px;
+  text-decoration:none;transition:all .2s;
+}
+.btn-outline:hover{border-color:rgba(124,58,237,.5);color:#a78bfa;}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);padding:28px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);
+}
+.foot-logo{display:flex;align-items:center;gap:9px;}
+.foot-logo-icon{
+  width:26px;height:26px;border-radius:6px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.foot-logo-text{font-size:15px;font-weight:800;}
+.foot-logo-text span{color:var(--accent);}
+.foot-note{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;}
+.foot-links{display:flex;gap:20px;}
+.foot-links a{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--muted);text-decoration:none;transition:color .15s;}
+.foot-links a:hover{color:var(--accent);}
+
+/* ── ANIMATIONS ── */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+.scroll-reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+.scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+/* live animated bars */
+.vis-rfill.bar1{animation:barWave1 3s ease-in-out infinite;}
+.vis-rfill.bar2{animation:barWave2 3.5s ease-in-out infinite;}
+.vis-rfill.bar3{animation:barWave3 2.8s ease-in-out infinite;}
+.vis-rfill.bar4{animation:barWave4 3.2s ease-in-out infinite;}
+.vis-rfill.bar5{animation:barWave5 2.6s ease-in-out infinite;}
+@keyframes barWave1{0%,100%{width:88%}50%{width:72%}}
+@keyframes barWave2{0%,100%{width:62%}50%{width:78%}}
+@keyframes barWave3{0%,100%{width:45%}50%{width:55%}}
+@keyframes barWave4{0%,100%{width:95%}50%{width:82%}}
+@keyframes barWave5{0%,100%{width:100%}50%{width:94%}}
+
+/* counter animation */
+.count-up{display:inline-block;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Energy<span>IQ</span></div>
+  </div>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#metrics">Impact</a>
+    <a href="Energyiq_dashboard.html" class="nav-cta">
+      Open Dashboard <span>↗</span>
+    </a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      Live Monitoring Active — 5 Rooms Online
+    </div>
+    <h1>
+      <div>Campus Energy,</div>
+      <div class="line2">Fully Visible.</div>
+      <div class="line3">Always Intelligent.</div>
+    </h1>
+    <p class="hero-sub">
+      Real-time wattage tracking, per-device control, and AI-driven cost insights — all in one command center built for modern campuses.
+    </p>
+    <div class="hero-actions">
+      <a href="Energyiq_dashboard.html" class="btn-primary">
+        Launch Dashboard <span class="arrow">→</span>
+      </a>
+      <a href="#features" class="btn-secondary">
+        Explore Features
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-val"><span class="count-up" data-target="5">0</span> <span>rooms</span></div>
+        <div class="hstat-lbl">Monitored Live</div>
+        <div class="hstat-note">↑ all online</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val"><span class="count-up" data-target="23">0</span> <span>devices</span></div>
+        <div class="hstat-lbl">Under Control</div>
+        <div class="hstat-note">↑ individually tracked</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val"><span class="count-up" data-target="5">0</span> <span>sec</span></div>
+        <div class="hstat-lbl">Update Frequency</div>
+        <div class="hstat-note">↑ near real-time</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val">₹<span class="count-up" data-target="7">0</span> <span>/kWh</span></div>
+        <div class="hstat-lbl">Live Cost Calc</div>
+        <div class="hstat-note">↑ instant ₹ / hr</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREVIEW -->
+<section class="preview-section scroll-reveal">
+  <div class="section-tag">Live Preview</div>
+  <h2 class="section-title" style="max-width:500px;margin:0 auto 12px;">See Your Campus<br>at a Glance</h2>
+  <p style="color:var(--muted2);font-size:15px;max-width:440px;margin:0 auto;">Every room, every device, every rupee — visible in real time from a single screen.</p>
+
+  <div class="preview-frame">
+    <div class="preview-bar">
+      <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+      <div class="preview-url">energyiq.campus / dashboard</div>
+    </div>
+    <div class="preview-body">
+      <div class="prev-sidebar">
+        <div style="font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:12px;padding:0 4px;">Campus Total</div>
+        <div style="background:var(--surface2);border:1px solid rgba(0,229,255,.12);border-radius:8px;padding:10px;margin-bottom:14px;">
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:#fff;line-height:1;">18.2<span style="font-size:11px;color:var(--accent);margin-left:2px;">kW</span></div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:3px;">₹127.40 / hour</div>
+        </div>
+        <div style="font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:8px;padding:0 4px;">Ground Floor</div>
+        <div class="prev-sb-room active">
+          <div class="prev-dot" style="background:#10b981;"></div>
+          <div class="prev-name">CS Lab 101</div>
+          <div class="prev-w" style="color:#10b981;">6790W</div>
+        </div>
+        <div class="prev-sb-room">
+          <div class="prev-dot" style="background:#ef4444;"></div>
+          <div class="prev-name">Lecture Hall A</div>
+          <div class="prev-w" style="color:#ef4444;">7675W</div>
+        </div>
+        <div style="font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin:8px 0;padding:0 4px;">1st Floor</div>
+        <div class="prev-sb-room">
+          <div class="prev-dot" style="background:#10b981;"></div>
+          <div class="prev-name">Staff Room</div>
+          <div class="prev-w" style="color:#10b981;">1875W</div>
+        </div>
+        <div class="prev-sb-room">
+          <div class="prev-dot" style="background:#f59e0b;"></div>
+          <div class="prev-name">Physics Lab</div>
+          <div class="prev-w" style="color:#f59e0b;">4025W</div>
+        </div>
+        <div style="font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin:8px 0;padding:0 4px;">Basement</div>
+        <div class="prev-sb-room">
+          <div class="prev-dot" style="background:#ef4444;"></div>
+          <div class="prev-name">Server Room</div>
+          <div class="prev-w" style="color:#ef4444;">6685W</div>
+        </div>
+      </div>
+      <div class="prev-main">
+        <div class="prev-strip">
+          <div class="prev-stat">
+            <div class="prev-stat-l">Active</div>
+            <div class="prev-stat-v" style="color:var(--accent)">5</div>
+          </div>
+          <div class="prev-stat">
+            <div class="prev-stat-l">Critical</div>
+            <div class="prev-stat-v" style="color:var(--red)">2</div>
+          </div>
+          <div class="prev-stat">
+            <div class="prev-stat-l">Today Cost</div>
+            <div class="prev-stat-v" style="color:var(--yellow)">₹1,782</div>
+          </div>
+          <div class="prev-stat">
+            <div class="prev-stat-l">CO₂ Today</div>
+            <div class="prev-stat-v" style="color:var(--green)">174 kg</div>
+          </div>
+        </div>
+        <div style="font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;">All Rooms — Click to Control Devices</div>
+        <div class="prev-cards">
+          <div class="prev-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <div><div class="prev-cn">CS Lab 101</div><div class="prev-cl">Ground · Block A</div></div>
+              <div style="background:rgba(16,185,129,.12);color:#10b981;padding:2px 6px;border-radius:10px;font-size:7px;font-family:var(--mono);">NORMAL</div>
+            </div>
+            <div class="prev-cw" style="color:#fff;">6790<span style="font-size:9px;color:var(--muted2);margin-left:2px;">W</span></div>
+            <div class="prev-cbar"><div class="prev-cfill" style="width:97%;background:#10b981;"></div></div>
+            <div class="prev-chips">
+              <div class="prev-chip">🖥️ Computers</div>
+              <div class="prev-chip">❄️ AC Unit</div>
+              <div class="prev-chip">💡 LED</div>
+            </div>
+          </div>
+          <div class="prev-card crit">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <div><div class="prev-cn">Lecture Hall A</div><div class="prev-cl">Ground · Block A</div></div>
+              <div style="background:rgba(239,68,68,.12);color:#ef4444;padding:2px 6px;border-radius:10px;font-size:7px;font-family:var(--mono);">CRITICAL</div>
+            </div>
+            <div class="prev-cw" style="color:#ef4444;">7675<span style="font-size:9px;color:var(--muted2);margin-left:2px;">W</span></div>
+            <div class="prev-cbar"><div class="prev-cfill" style="width:92%;background:#ef4444;"></div></div>
+            <div class="prev-chips">
+              <div class="prev-chip">❄️ AC (×2)</div>
+              <div class="prev-chip">💡 LED</div>
+              <div class="prev-chip">+1</div>
+            </div>
+          </div>
+          <div class="prev-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <div><div class="prev-cn">Staff Room</div><div class="prev-cl">1st Floor · Block A</div></div>
+              <div style="background:rgba(16,185,129,.12);color:#10b981;padding:2px 6px;border-radius:10px;font-size:7px;font-family:var(--mono);">NORMAL</div>
+            </div>
+            <div class="prev-cw" style="color:#fff;">1875<span style="font-size:9px;color:var(--muted2);margin-left:2px;">W</span></div>
+            <div class="prev-cbar"><div class="prev-cfill" style="width:44%;background:#10b981;"></div></div>
+            <div class="prev-chips">
+              <div class="prev-chip">🖥️ Computers</div>
+              <div class="prev-chip">🚰 Dispenser</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header scroll-reveal">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Everything You Need to<br>Control Energy Waste</h2>
+    <p class="section-sub">From a live wattage feed to per-device toggles, EnergyIQ puts every watt under your control.</p>
+  </div>
+  <div class="features-grid scroll-reveal">
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Live Wattage Feed</div>
+      <div class="feat-desc">Every device reports its exact wattage in real time. Watch the live dot on the graph bounce with each reading — updated every 5 seconds.</div>
+      <div class="feat-tag">5s refresh</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Stock-Style Graph</div>
+      <div class="feat-desc">Zoom in from ALL-day view down to the last 10 seconds. Past data is permanently frozen like a stock chart — only the live tip moves.</div>
+      <div class="feat-tag">Zoom: 10s → 5m → ALL</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎛️</div>
+      <div class="feat-title">Per-Device Control</div>
+      <div class="feat-desc">Toggle any individual device — AC, projector, fans, computers — directly from the dashboard. Bulk ALL ON / ALL OFF in one click.</div>
+      <div class="feat-tag">Instant toggle</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">AI Cost Alerts</div>
+      <div class="feat-desc">Critical rooms trigger AI alerts with estimated daily waste in ₹. High-usage rooms get automatic energy-saving tips.</div>
+      <div class="feat-tag">Auto AI tips</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🏠</div>
+      <div class="feat-title">Room Simulator</div>
+      <div class="feat-desc">Visualize every room in 3D — lights glow, fans spin, AC vents blow cold air. Toggle devices and watch the room react live.</div>
+      <div class="feat-tag">3D visual sim</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">💾</div>
+      <div class="feat-title">Persistent History</div>
+      <div class="feat-desc">Graph history is saved to localStorage every cycle. Refresh the page and your data continues exactly where it left off — nothing lost.</div>
+      <div class="feat-tag">localStorage persist</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="how">
+    <div class="scroll-reveal">
+      <div class="section-tag">How It Works</div>
+      <h2 class="section-title">From Raw Wattage to Actionable Insight</h2>
+      <p class="section-sub" style="margin-bottom:36px;">EnergyIQ runs a tight loop — sense, record, display, control — every 5 seconds.</p>
+      <div class="how-steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title">Sense Device Watts</div>
+            <div class="step-desc">Every device reports a live fluctuating wattage reading based on its rated base consumption ± natural variation.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title">Lock Into History</div>
+            <div class="step-desc">Each 5-second reading is permanently frozen into a timestamped history slot. Past data is never changed or regenerated.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title">Render the Graph</div>
+            <div class="step-desc">The stock-style chart grows left-to-right. Only the live tip moves. Zoom in to see second-level micro-variations clearly.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div>
+            <div class="step-title">AI Status & Alerts</div>
+            <div class="step-desc">Rooms over 85% capacity trigger critical alerts with estimated waste costs. You get actionable tips, not just raw numbers.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="how-visual scroll-reveal">
+      <div class="vis-hdr">📡 Live Room Status</div>
+      <div class="vis-rooms">
+        <div class="vis-room">
+          <div class="vis-rdot" style="background:#10b981;"></div>
+          <div class="vis-rname">CS Lab 101</div>
+          <div class="vis-rbar"><div class="vis-rfill bar1" style="background:#10b981;width:88%;"></div></div>
+          <div class="vis-rw">6790W</div>
+        </div>
+        <div class="vis-room">
+          <div class="vis-rdot" style="background:#ef4444;"></div>
+          <div class="vis-rname">Lecture Hall A</div>
+          <div class="vis-rbar"><div class="vis-rfill bar2" style="background:#ef4444;width:62%;"></div></div>
+          <div class="vis-rw">7675W</div>
+        </div>
+        <div class="vis-room">
+          <div class="vis-rdot" style="background:#10b981;"></div>
+          <div class="vis-rname">Staff Room</div>
+          <div class="vis-rbar"><div class="vis-rfill bar3" style="background:#10b981;width:45%;"></div></div>
+          <div class="vis-rw">1875W</div>
+        </div>
+        <div class="vis-room">
+          <div class="vis-rdot" style="background:#f59e0b;"></div>
+          <div class="vis-rname">Physics Lab</div>
+          <div class="vis-rbar"><div class="vis-rfill bar4" style="background:#f59e0b;width:95%;"></div></div>
+          <div class="vis-rw">4025W</div>
+        </div>
+        <div class="vis-room">
+          <div class="vis-rdot" style="background:#ef4444;"></div>
+          <div class="vis-rname">Server Room</div>
+          <div class="vis-rbar"><div class="vis-rfill bar5" style="background:#ef4444;width:100%;"></div></div>
+          <div class="vis-rw">6685W</div>
+        </div>
+      </div>
+      <div class="vis-ai">
+        <div class="vis-ai-icon">🤖</div>
+        <div class="vis-ai-text"><strong>AI Alert:</strong> Server Room at 106% capacity. Est. waste: <strong>₹218/day</strong>. Consider offloading non-critical workloads.</div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:16px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);">18.2 kW</div>
+          <div style="font-size:9px;letter-spacing:1.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-top:3px;">Campus Total</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--yellow);">₹127/hr</div>
+          <div style="font-size:9px;letter-spacing:1.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-top:3px;">Running Cost</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);">174 kg</div>
+          <div style="font-size:9px;letter-spacing:1.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-top:3px;">CO₂ Today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section class="metrics" id="metrics">
+  <div class="scroll-reveal">
+    <div class="section-tag">Impact</div>
+    <h2 class="section-title">Numbers That Matter</h2>
+    <p style="color:var(--muted2);font-size:15px;max-width:440px;margin:0 auto;">EnergyIQ turns raw wattage into decisions that cut costs and carbon.</p>
+  </div>
+  <div class="metrics-grid scroll-reveal">
+    <div class="metric">
+      <div class="metric-val"><span class="count-up" data-target="30">0</span><span class="unit">%</span></div>
+      <div class="metric-lbl">Avg. Waste Cut</div>
+      <div class="metric-note">↑ with AI alerts</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val">₹<span class="count-up" data-target="1782">0</span></div>
+      <div class="metric-lbl">Daily Cost Visible</div>
+      <div class="metric-note">↑ across all rooms</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val"><span class="count-up" data-target="23">0</span><span class="unit"> dev</span></div>
+      <div class="metric-lbl">Devices Tracked</div>
+      <div class="metric-note">↑ individually</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val"><span class="count-up" data-target="3600">0</span><span class="unit">s</span></div>
+      <div class="metric-lbl">History Per Room</div>
+      <div class="metric-note">↑ 1 hour of data</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner scroll-reveal">
+    <div class="cta-box">
+      <div style="font-size:36px;margin-bottom:18px;">⚡</div>
+      <h2>Ready to Take Control<br>of Your Campus Energy?</h2>
+      <p>Open the live dashboard to see real-time wattage, toggle devices, and get AI-powered cost insights — right now.</p>
+      <div class="cta-btns">
+        <a href="Energyiq_dashboard.html" class="btn-big">
+          Launch Dashboard <span class="arrow">→</span>
+        </a>
+        <a href="Energyiq_simulator.html" target="_blank" rel="noopener" class="btn-outline">
+          🏠 Room Simulator
+        </a>
+      </div>
+      <p style="margin-top:24px;margin-bottom:0;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;">NO SETUP NEEDED — WORKS INSTANTLY IN YOUR BROWSER</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">
+    <div class="foot-logo-icon">⚡</div>
+    <div class="foot-logo-text">Energy<span>IQ</span></div>
+  </div>
+  <div class="foot-note">Smart Campus Energy Intelligence</div>
+  <div class="foot-links">
+    <a href="Energyiq_dashboard.html">Dashboard</a>
+    <a href="Energyiq_simulator.html" target="_blank" rel="noopener">Simulator</a>
+  </div>
+</footer>
+
+<script>
+// ── Scroll reveal ──
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.scroll-reveal').forEach(el=>observer.observe(el));
+
+// ── Count-up animation ──
+function animateCount(el){
+  const target=parseInt(el.dataset.target);
+  const duration=1400;
+  const start=performance.now();
+  function step(now){
+    const progress=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-progress,3); // ease-out cubic
+    el.textContent=Math.round(ease*target).toLocaleString('en-IN');
+    if(progress<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+const countObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      animateCount(e.target);
+      countObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.5});
+document.querySelectorAll('.count-up').forEach(el=>countObs.observe(el));
+</script>
+</body>
+</html>

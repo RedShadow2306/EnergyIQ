@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnergyIQ — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b14;--surface:#0e1420;--surface2:#151d2e;--surface3:#1c2638;
+  --border:#1e2d45;--border2:#243450;
+  --accent:#00e5ff;--accent2:#7c3aed;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --text:#e2e8f0;--muted:#4a6080;--muted2:#64748b;
+  --font:'Syne',sans-serif;--mono:'Space Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.022) 1px,transparent 1px);
+  background-size:48px 48px;}
+header{position:fixed;top:0;left:0;right:0;z-index:300;height:58px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  background:rgba(7,11,20,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;}
+.logo-text{font-size:19px;font-weight:800;letter-spacing:-.5px;}
+.logo-text span{color:var(--accent);}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.sim-link{display:flex;align-items:center;gap:6px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);color:#a78bfa;padding:6px 14px;border-radius:20px;font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;text-decoration:none;transition:all .2s;}
+.sim-link:hover{background:rgba(124,58,237,.22);border-color:#7c3aed;}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green);padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:10px;}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 58px);margin-top:58px;position:relative;z-index:1;}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sb-top{padding:16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-lbl{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;}
+.total-box{background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(124,58,237,.07));border:1px solid rgba(0,229,255,.15);border-radius:11px;padding:13px;}
+.total-num{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;color:#fff;}
+.total-num em{font-size:13px;color:var(--accent);font-style:normal;margin-left:2px;}
+.total-sub{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:4px;}
+.total-track{height:3px;background:var(--border);border-radius:2px;margin-top:9px;overflow:hidden;}
+.total-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 1s ease;}
+.sb-list{flex:1;overflow-y:auto;padding-bottom:8px;}
+.sb-list::-webkit-scrollbar{width:3px;}
+.sb-list::-webkit-scrollbar-thumb{background:var(--border);}
+.floor-hdr{padding:12px 16px 5px;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+.sb-room{padding:9px 16px;cursor:pointer;border-left:3px solid transparent;display:flex;align-items:center;gap:9px;transition:all .18s;}
+.sb-room:hover{background:var(--surface2);border-left-color:rgba(0,229,255,.4);}
+.sb-room.active{background:rgba(0,229,255,.05);border-left-color:var(--accent);}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sb-info{flex:1;min-width:0;}
+.sb-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-sub{font-size:10px;color:var(--muted2);font-family:var(--mono);}
+.sb-watt{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;}
+.main{display:flex;flex-direction:column;overflow:hidden;}
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);flex-shrink:0;}
+.stat-cell{padding:12px 18px;border-right:1px solid var(--border);}
+.stat-cell:last-child{border-right:none;}
+.stat-lbl{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:5px;}
+.stat-val{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
+.stat-note{font-size:10px;font-family:var(--mono);color:var(--muted2);margin-top:2px;}
+.scroll-area{flex:1;overflow-y:auto;padding:18px;}
+.scroll-area::-webkit-scrollbar{width:4px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.section-hdr{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:13px;}
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;margin-bottom:20px;}
+.room-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;}
+.room-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .22s;}
+.room-card:hover{border-color:rgba(0,229,255,.4);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,229,255,.07);}
+.room-card:hover::after{opacity:1;background:var(--accent);}
+.room-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px rgba(0,229,255,.2),0 6px 24px rgba(0,229,255,.1);}
+.room-card.selected::after{opacity:1;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.room-card.critical{border-color:rgba(239,68,68,.35);}
+.room-card.high{border-color:rgba(245,158,11,.3);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.card-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.card-loc{font-size:10px;color:var(--muted2);font-family:var(--mono);}
+.badge{padding:3px 8px;border-radius:20px;font-size:9px;font-family:var(--mono);font-weight:700;}
+.badge-normal{background:rgba(16,185,129,.12);color:var(--green);}
+.badge-high{background:rgba(245,158,11,.12);color:var(--yellow);}
+.badge-critical{background:rgba(239,68,68,.12);color:var(--red);}
+.card-watt{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:3px;}
+.card-watt em{font-size:12px;color:var(--muted2);font-style:normal;margin-left:1px;}
+.card-cost{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:10px;}
+.cap-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.cap-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.fill-g{background:var(--green);}.fill-y{background:var(--yellow);}.fill-r{background:var(--red);}
+.dev-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.chip{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:9px;font-family:var(--mono);color:var(--muted2);}
+.chip-dot{width:4px;height:4px;border-radius:50%;}
+.detail-wrap{margin-bottom:20px;}
+
+.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.dp-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;gap:10px;}
+.dp-title-block{flex:1;min-width:0;}
+.dp-title{font-size:16px;font-weight:800;margin-bottom:2px;}
+.dp-sub{font-size:10px;color:var(--muted2);font-family:var(--mono);}
+.dp-top-right{display:flex;align-items:center;gap:14px;}
+.dp-nums{display:flex;gap:18px;}
+.dp-num{text-align:center;}
+.dp-nval{font-family:var(--mono);font-size:19px;font-weight:700;}
+.dp-nlbl{font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;}
+.bulk-btns{display:flex;gap:7px;}
+.bulk-btn{padding:5px 11px;border-radius:7px;font-size:10px;font-family:var(--mono);cursor:pointer;border:1px solid;transition:all .2s;font-weight:700;}
+.btn-allon{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--green);}
+.btn-allon:hover{background:rgba(16,185,129,.2);}
+.btn-alloff{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red);}
+.btn-alloff:hover{background:rgba(239,68,68,.2);}
+.close-btn{width:28px;height:28px;border-radius:7px;background:var(--surface3);border:1px solid var(--border);color:var(--muted2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.close-btn:hover{border-color:var(--red);color:var(--red);}
+.dp-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.dp-graph{padding:14px 18px;border-right:1px solid var(--border);}
+.graph-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.graph-title{font-size:9px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;font-family:var(--mono);}
+.graph-tabs{display:flex;gap:4px;}
+.graph-tab{padding:3px 9px;border-radius:5px;font-size:9px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border);color:var(--muted2);background:transparent;transition:all .15s;}
+.graph-tab.active{background:rgba(0,229,255,.1);border-color:var(--accent);color:var(--accent);}
+canvas.gchart{width:100%!important;display:block;}
+.dp-devices{overflow-y:auto;max-height:300px;}
+.dp-devices::-webkit-scrollbar{width:3px;}
+.dp-devices::-webkit-scrollbar-thumb{background:var(--border);}
+.dev-hdr{padding:11px 14px 5px;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+.dev-row{padding:9px 14px;border-bottom:1px solid rgba(30,45,69,.5);display:flex;align-items:center;gap:8px;transition:background .15s;cursor:pointer;}
+.dev-row:hover{background:var(--surface2);}
+.dev-row.graph-active{background:rgba(0,229,255,.04);border-left:2px solid var(--accent);}
+.dev-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.icon-on{background:rgba(0,229,255,.08);}.icon-off{background:var(--border);opacity:.4;}
+.dev-info{flex:1;min-width:0;}
+.dev-name{font-size:11px;font-weight:600;margin-bottom:1px;}
+.dev-name.off{opacity:.4;}
+.dev-wlbl{font-size:9px;color:var(--muted2);font-family:var(--mono);}
+.toggle{position:relative;width:36px;height:19px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.t-track{position:absolute;inset:0;border-radius:10px;background:var(--border);cursor:pointer;transition:background .25s;border:1px solid var(--border2);}
+.toggle input:checked+.t-track{background:var(--green);border-color:var(--green);}
+.t-thumb{position:absolute;top:3px;left:3px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none;}
+.toggle input:checked~.t-thumb{transform:translateX(17px);}
+.ai-bar{padding:10px 18px;border-top:1px solid var(--border);background:rgba(124,58,237,.04);display:flex;gap:8px;align-items:flex-start;}
+.ai-bar-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ai-bar-text{font-size:11px;color:#a78bfa;line-height:1.5;}
+.ai-bar-text strong{color:#c4b5fd;}
+.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;border-radius:9px;font-size:11px;font-family:var(--mono);display:flex;align-items:center;gap:7px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Energy<span>IQ</span></div>
+  </div>
+  <div class="hdr-right">
+    <a class="sim-link" href="Energyiq_simulator.html" target="_blank" rel="noopener">🏠 Room Simulator ↗</a>
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-lbl">Campus Total</div>
+      <div class="total-box">
+        <div class="total-num" id="totalKw">--<em>kW</em></div>
+        <div class="total-sub" id="totalCostHr">₹-- / hour</div>
+        <div class="total-track"><div class="total-fill" id="totalFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="sb-list" id="sidebarList"></div>
+  </aside>
+
+  <div class="main">
+    <div class="stats-strip">
+      <div class="stat-cell"><div class="stat-lbl">Active Rooms</div><div class="stat-val" id="sActive" style="color:var(--accent)">--</div><div class="stat-note">of <span id="sTotal">--</span></div></div>
+      <div class="stat-cell"><div class="stat-lbl">Critical Alerts</div><div class="stat-val" id="sCrit" style="color:var(--red)">--</div><div class="stat-note" style="color:var(--muted2)">over limit</div></div>
+      <div class="stat-cell"><div class="stat-lbl">Today's Cost</div><div class="stat-val" id="sCost" style="color:var(--yellow)">--</div><div class="stat-note" style="color:var(--muted2)">₹ est.</div></div>
+      <div class="stat-cell"><div class="stat-lbl">CO₂ Today</div><div class="stat-val" id="sCo2" style="color:var(--green)">--</div><div class="stat-note" style="color:var(--muted2)">kg</div></div>
+    </div>
+    <div class="scroll-area">
+      <div class="section-hdr">ALL ROOMS — CLICK TO CONTROL DEVICES</div>
+      <div class="rooms-grid" id="roomsGrid"></div>
+      <div id="detailWrap"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot" id="toastDot"></div><span id="toastMsg"></span></div>
+
+<script>
+const rooms=[
+  {id:1,name:"CS Lab 101",floor:"Ground Floor",block:"Block A",capacity:10500,
+   devices:[
+    {id:'d1a',name:"Computers (30)",icon:"🖥️",base:6000,on:true,type:'computer'},
+    {id:'d1b',name:"AC Unit",icon:"❄️",base:3250,on:true,type:'ac'},
+    {id:'d1c',name:"LED Lights",icon:"💡",base:690,on:true,type:'light'},
+    {id:'d1d',name:"Projector",icon:"📽️",base:25,on:true,type:'projector'},
+    {id:'d1e',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+  ]},
+  {id:2,name:"Lecture Hall A",floor:"Ground Floor",block:"Block A",capacity:12000,
+   devices:[
+    {id:'d2a',name:"AC Units (2)",icon:"❄️",base:6500,on:true,type:'ac'},
+    {id:'d2b',name:"LED Lights",icon:"💡",base:1150,on:true,type:'light'},
+    {id:'d2c',name:"Projector",icon:"📽️",base:25,on:true,type:'projector'},
+    {id:'d2d',name:"Ceiling Fans (4)",icon:"🌀",base:300,on:false,type:'fan'},
+    {id:'d2e',name:"Sound System",icon:"🔊",base:25,on:false,type:'other'},
+  ]},
+  {id:3,name:"Staff Room",floor:"1st Floor",block:"Block A",capacity:8000,
+   devices:[
+    {id:'d3a',name:"Computers (8)",icon:"🖥️",base:1600,on:true,type:'computer'},
+    {id:'d3b',name:"AC Unit",icon:"❄️",base:1200,on:false,type:'ac'},
+    {id:'d3c',name:"LED Lights",icon:"💡",base:100,on:true,type:'light'},
+    {id:'d3d',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+    {id:'d3e',name:"Water Dispenser",icon:"🚰",base:100,on:true,type:'other'},
+  ]},
+  {id:4,name:"Physics Lab",floor:"1st Floor",block:"Block B",capacity:4000,
+   devices:[
+    {id:'d4a',name:"Lab Equipment",icon:"🔬",base:1800,on:true,type:'other'},
+    {id:'d4b',name:"AC Unit",icon:"❄️",base:1800,on:true,type:'ac'},
+    {id:'d4c',name:"LED Lights",icon:"💡",base:230,on:true,type:'light'},
+    {id:'d4d',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+    {id:'d4e',name:"Fume Hood",icon:"💨",base:120,on:true,type:'other'},
+  ]},
+  {id:5,name:"Server Room",floor:"Basement",block:"Block B",capacity:7000,
+   devices:[
+    {id:'d5a',name:"Server Racks (5)",icon:"🖧",base:2500,on:true,type:'computer'},
+    {id:'d5b',name:"Precision AC",icon:"❄️",base:3800,on:true,type:'ac'},
+    {id:'d5c',name:"UPS Systems",icon:"🔋",base:200,on:true,type:'other'},
+    {id:'d5d',name:"LED Lights",icon:"💡",base:65,on:true,type:'light'},
+    {id:'d5e',name:"Exhaust Fan",icon:"🌀",base:120,on:true,type:'fan'},
+  ]},
+];
+
+rooms.forEach(r=>r.devices.forEach(d=>{d.watt=d.base;}));
+
+const HIST_LEN=3600;
+function genHist(base,srv=false){
+  return Array.from({length:HIST_LEN},(_,i)=>{
+    if(!base)return 0;
+    const hOfDay=new Date().getHours()+(i/3600);
+    if(srv)return base*(.88+Math.random()*.24);
+    const pk=Math.exp(-.5*Math.pow((hOfDay-10)/3,2));
+    const off=hOfDay<6||hOfDay>21?.04:.15;
+    return Math.max(0,base*(off+pk*.85)*(.88+Math.random()*.24));
+  });
+}
+const histRoom={},histDev={};
+rooms.forEach(r=>{
+  histRoom[r.id]=genHist(r.devices.filter(d=>d.on).reduce((s,d)=>s+d.base,0),r.id===5);
+  r.devices.forEach(d=>{histDev[d.id]=genHist(d.on?d.base:0,r.id===5);});
+});
+const _n=new Date();let timePtr=Math.min(_n.getHours()*3600+_n.getMinutes()*60+_n.getSeconds(),HIST_LEN-1);
+let selRoom=null,graphDevId=null,simTick=0;
+
+const rWatt=r=>r.devices.filter(d=>d.on).reduce((s,d)=>s+d.watt,0);
+function rStatus(r){const p=rWatt(r)/r.capacity;return p>.85?'critical':p>.55?'high':'normal';}
+const dotC=r=>rStatus(r)==='critical'?'#ef4444':rStatus(r)==='high'?'#f59e0b':'#10b981';
+const bClass=r=>rStatus(r)==='critical'?'badge-critical':rStatus(r)==='high'?'badge-high':'badge-normal';
+const capC=r=>rStatus(r)==='critical'?'fill-r':rStatus(r)==='high'?'fill-y':'fill-g';
+const costHr=w=>((w/1000)*7).toFixed(2);
+const pct=r=>Math.min((rWatt(r)/r.capacity)*100,100).toFixed(0);
+
+function syncToStorage(){
+  const s={};
+  rooms.forEach(r=>{s[r.id]={};r.devices.forEach(d=>{s[r.id][d.id]=d.on;});});
+  localStorage.setItem('energyiq_state',JSON.stringify(s));
+  localStorage.setItem('energyiq_ts',Date.now().toString());
+}
+
+let toastT;
+function toast(msg,col='#10b981'){
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toastDot').style.background=col;
+  const el=document.getElementById('toast');
+  el.classList.add('show');clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── CHART — per-second, zoom-aware ──
+const ZOOM_WINDOWS=[0,300,60,30,10];
+let zoomIdx=4;
+function zoomIn(){if(zoomIdx<ZOOM_WINDOWS.length-1){zoomIdx++;redrawChart();updateZoomUI();}}
+function zoomOut(){if(zoomIdx>0){zoomIdx--;redrawChart();updateZoomUI();}}
+function updateZoomUI(){
+  const labels=['ALL','5m','1m','30s','10s'];
+  const lbl=document.getElementById('zoomLbl'),zi=document.getElementById('zoomIn'),zo=document.getElementById('zoomOut');
+  if(lbl)lbl.textContent=labels[zoomIdx]||'';
+  if(zi)zi.disabled=(zoomIdx>=ZOOM_WINDOWS.length-1);
+  if(zo)zo.disabled=(zoomIdx<=0);
+}
+function redrawChart(){
+  const c=document.getElementById('mainGraph');if(!c||!selRoom)return;
+  const r=rooms.find(x=>x.id===selRoom);
+  const gData=graphDevId?histDev[graphDevId]:histRoom[r.id];
+  const gDev=graphDevId?r.devices.find(d=>d.id===graphDevId):null;
+  const gColor=graphDevId?(gDev?.on?'#00e5ff':'#4a6080'):(rStatus(r)==='critical'?'#ef4444':rStatus(r)==='high'?'#f59e0b':'#00e5ff');
+  drawChart(c,gData,gColor,timePtr);
+}
+function drawChart(canvas,data,color,ptr){
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=canvas.offsetWidth*dpr;canvas.height=canvas.offsetHeight*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;if(!W||!H)return;
+  const pad={t:10,r:14,b:28,l:50},gw=W-pad.l-pad.r,gh=H-pad.t-pad.b;
+  ctx.clearRect(0,0,W,H);
+  const allVisible=data.slice(0,ptr+1);if(allVisible.length<2)return;
+  const win=ZOOM_WINDOWS[zoomIdx];
+  const visible=win===0?allVisible:allVisible.slice(Math.max(0,allVisible.length-win));
+  if(visible.length<2)return;
+  const minV=Math.min(...visible),maxV=Math.max(...visible,1);
+  const yPad=Math.max((maxV-minV)*0.2,maxV*0.04);
+  const yMax=maxV+yPad,yMin=Math.max(0,minV-yPad*0.4),yRange=yMax-yMin||1;
+  ctx.fillStyle='rgba(74,96,128,.8)';ctx.font='8px Space Mono';ctx.textAlign='right';
+  for(let i=0;i<=4;i++){
+    const v=yMax-(yRange/4)*i,y=pad.t+(gh/4)*i;
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':Math.round(v)+'W',pad.l-4,y+3);
+  }
+  ctx.textAlign='center';ctx.fillStyle='rgba(74,96,128,.8)';
+  const startAbsI=allVisible.length-visible.length;
+  for(let li=0;li<=4;li++){
+    const frac=li/4,absI=Math.round(startAbsI+(visible.length-1)*frac);
+    const hh=Math.floor(absI/3600)%24,mm=Math.floor((absI%3600)/60),ss=absI%60;
+    const lbl=win<=60?`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`:`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+    ctx.fillText(lbl,pad.l+frac*gw,H-6);
+  }
+  const pts=visible.map((v,i)=>({x:pad.l+(i/(visible.length-1))*gw,y:pad.t+gh-((v-yMin)/yRange)*gh}));
+  function smoothPath(){
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length-1;i++){const cx=(pts[i].x+pts[i+1].x)/2,cy=(pts[i].y+pts[i+1].y)/2;ctx.quadraticCurveTo(pts[i].x,pts[i].y,cx,cy);}
+    ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+  }
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+gh);
+  grad.addColorStop(0,color+'3a');grad.addColorStop(.6,color+'12');grad.addColorStop(1,color+'00');
+  smoothPath();ctx.lineTo(pts[pts.length-1].x,pad.t+gh);ctx.lineTo(pts[0].x,pad.t+gh);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  smoothPath();ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+  const tip=pts[pts.length-1];
+  ctx.beginPath();ctx.arc(tip.x,tip.y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  ctx.beginPath();ctx.arc(tip.x,tip.y,8,0,Math.PI*2);ctx.fillStyle=color+'35';ctx.fill();
+  ctx.beginPath();ctx.arc(tip.x,tip.y,13,0,Math.PI*2);ctx.fillStyle=color+'10';ctx.fill();
+}
+function renderSidebar(){
+  const floors=[...new Set(rooms.map(r=>r.floor))];
+  document.getElementById('sidebarList').innerHTML=floors.map(fl=>`
+    <div class="floor-hdr">${fl}</div>
+    ${rooms.filter(r=>r.floor===fl).map(r=>`
+      <div class="sb-room ${selRoom===r.id?'active':''}" onclick="selectRoom(${r.id})">
+        <div class="sb-dot" style="background:${dotC(r)}"></div>
+        <div class="sb-info"><div class="sb-name">${r.name}</div><div class="sb-sub">${r.block}</div></div>
+        <div class="sb-watt" style="color:${dotC(r)}">${rWatt(r)}W</div>
+      </div>`).join('')}
+  `).join('');
+}
+
+function renderStats(){
+  const total=rooms.reduce((s,r)=>s+rWatt(r),0);
+  document.getElementById('totalKw').innerHTML=`${(total/1000).toFixed(1)}<em>kW</em>`;
+  document.getElementById('totalCostHr').textContent=`₹${costHr(total)} / hr`;
+  document.getElementById('totalFill').style.width=`${Math.min((total/40000)*100,100)}%`;
+  document.getElementById('sActive').textContent=rooms.filter(r=>rWatt(r)>0).length;
+  document.getElementById('sTotal').textContent=rooms.length;
+  document.getElementById('sCrit').textContent=rooms.filter(r=>rStatus(r)==='critical').length;
+  document.getElementById('sCost').textContent=`₹${(parseFloat(costHr(total))*14).toFixed(0)}`;
+  document.getElementById('sCo2').textContent=((total/1000)*.82*14).toFixed(0);
+}
+
+function renderCards(){
+  document.getElementById('roomsGrid').innerHTML=rooms.map(r=>{
+    const w=rWatt(r),on=r.devices.filter(d=>d.on);
+    return `
+    <div class="room-card ${rStatus(r)} ${selRoom===r.id?'selected':''}" onclick="selectRoom(${r.id})">
+      <div class="card-top">
+        <div><div class="card-name">${r.name}</div><div class="card-loc">${r.floor} · ${r.block}</div></div>
+        <div class="badge ${bClass(r)}">${rStatus(r).toUpperCase()}</div>
+      </div>
+      <div class="card-watt">${w}<em>W</em></div>
+      <div class="card-cost">₹${costHr(w)}/hr · ${pct(r)}% cap</div>
+      <div class="cap-bar"><div class="cap-fill ${capC(r)}" style="width:${pct(r)}%"></div></div>
+      <div class="dev-chips">
+        ${on.slice(0,3).map(d=>`<div class="chip"><div class="chip-dot" style="background:var(--green)"></div>${d.icon} ${d.name}</div>`).join('')}
+        ${on.length>3?`<div class="chip">+${on.length-3}</div>`:''}
+        ${on.length===0?`<div class="chip" style="color:var(--muted)">All off</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _detailRoomId=null,_detailDevId=null;
+function renderDetail(){
+  const wrap=document.getElementById('detailWrap');
+  if(!selRoom){wrap.innerHTML='';_detailRoomId=null;_detailDevId=null;return;}
+  const r=rooms.find(x=>x.id===selRoom);
+  if(_detailRoomId!==selRoom||_detailDevId!==graphDevId){
+    _detailRoomId=selRoom;_detailDevId=graphDevId;
+    const gDev=graphDevId?r.devices.find(d=>d.id===graphDevId):null;
+    const gLabel=gDev?gDev.name:'Room Total';
+    wrap.innerHTML=`
+    <div class="detail-wrap">
+      <div class="detail-panel">
+        <div class="dp-top">
+          <div class="dp-title-block"><div class="dp-title">${r.name}</div><div class="dp-sub" id="dp-sub-live">${r.floor} · ${r.block}</div></div>
+          <div class="dp-top-right">
+            <div class="dp-nums">
+              <div class="dp-num"><div class="dp-nval" id="dp-watt-live" style="color:var(--accent)">--W</div><div class="dp-nlbl">Live</div></div>
+              <div class="dp-num"><div class="dp-nval" id="dp-cost-live" style="color:var(--yellow)">₹--</div><div class="dp-nlbl">/hr</div></div>
+            </div>
+            <div class="bulk-btns">
+              <button class="bulk-btn btn-allon" onclick="bulkToggle(${r.id},true)">ALL ON</button>
+              <button class="bulk-btn btn-alloff" onclick="bulkToggle(${r.id},false)">ALL OFF</button>
+            </div>
+            <button class="close-btn" onclick="closeDetail()">✕</button>
+          </div>
+        </div>
+        <div class="dp-body">
+          <div class="dp-graph">
+            <div class="graph-hdr">
+              <div class="graph-title">📊 ${gLabel} — LIVE</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div class="graph-tabs">
+                  <button class="graph-tab ${!graphDevId?'active':''}" onclick="setGraphRoom()">Room</button>
+                  ${graphDevId?`<button class="graph-tab active">${gDev?.icon||''} Dev</button>`:''}
+                </div>
+                <div class="zoom-btns">
+                  <button class="zoom-btn" id="zoomOut" onclick="zoomOut()" title="Zoom out">−</button>
+                  <span class="zoom-lbl" id="zoomLbl">10s</span>
+                  <button class="zoom-btn" id="zoomIn" onclick="zoomIn()" title="Zoom in">+</button>
+                </div>
+              </div>
+            </div>
+            <canvas class="gchart" id="mainGraph" style="height:170px;"></canvas>
+          </div>
+          <div class="dp-devices">
+            <div class="dev-hdr">DEVICES — CLICK ROW FOR GRAPH · TOGGLE</div>
+            ${r.devices.map(d=>`
+              <div class="dev-row ${graphDevId===d.id?'graph-active':''}" onclick="setGraphDev('${d.id}')">
+                <div class="dev-icon ${d.on?'icon-on':'icon-off'}">${d.icon}</div>
+                <div class="dev-info"><div class="dev-name ${d.on?'':'off'}">${d.name}</div><div class="dev-wlbl" id="dwatt-${d.id}">${d.on?d.watt+'W active':'off'}</div></div>
+                <label class="toggle" onclick="event.stopPropagation()">
+                  <input type="checkbox" ${d.on?'checked':''} onchange="toggleDev(event,${r.id},'${d.id}')">
+                  <div class="t-track"></div><div class="t-thumb"></div>
+                </label>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="ai-bar"><div class="ai-bar-icon">🤖</div><div class="ai-bar-text" id="dp-ai-live">...</div></div>
+      </div>
+    </div>`;
+    updateZoomUI();
+  }
+  const w=rWatt(r);
+  const wEl=document.getElementById('dp-watt-live'),cEl=document.getElementById('dp-cost-live'),aEl=document.getElementById('dp-ai-live');
+  if(wEl)wEl.textContent=w+'W';
+  if(cEl)cEl.textContent='₹'+costHr(w);
+  if(aEl){
+    const p=Math.round((w/r.capacity)*100);
+    if(rStatus(r)==='critical')aEl.innerHTML=`<strong>AI Alert:</strong> ${r.name} at ${p}% cap. Est. waste: <strong>₹${(parseFloat(costHr(w))*24*.3).toFixed(0)}/day</strong>`;
+    else if(rStatus(r)==='high')aEl.innerHTML=`<strong>Tip:</strong> Raise AC by 2°C → saves ~15% energy.`;
+    else aEl.innerHTML=`<strong>EnergyIQ:</strong> ${r.name} running efficiently at ${p}% ✓`;
+  }
+  r.devices.forEach(d=>{const el=document.getElementById('dwatt-'+d.id);if(el)el.textContent=d.on?d.watt+'W active':'off';});
+  requestAnimationFrame(()=>{
+    const c=document.getElementById('mainGraph');if(!c)return;
+    const gData=graphDevId?histDev[graphDevId]:histRoom[r.id];
+    const gDev=graphDevId?r.devices.find(d=>d.id===graphDevId):null;
+    const gColor=graphDevId?(gDev?.on?'#00e5ff':'#4a6080'):(rStatus(r)==='critical'?'#ef4444':rStatus(r)==='high'?'#f59e0b':'#00e5ff');
+    drawChart(c,gData,gColor,timePtr);
+  });
+}
+function renderAll(){renderStats();renderSidebar();renderCards();renderDetail();}
+
+function selectRoom(id){
+  selRoom=selRoom===id?null:id;
+  if(selRoom)graphDevId=null;
+  renderAll();
+  if(selRoom)setTimeout(()=>document.getElementById('detailWrap').scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+}
+function closeDetail(){selRoom=null;graphDevId=null;renderAll();}
+function setGraphDev(id){graphDevId=graphDevId===id?null:id;renderDetail();}
+function setGraphRoom(){graphDevId=null;renderDetail();}
+
+function toggleDev(e,roomId,devId){
+  e.stopPropagation();
+  const r=rooms.find(x=>x.id===roomId),d=r.devices.find(x=>x.id===devId);
+  d.on=!d.on;d.watt=d.on?d.base:0;
+  syncToStorage();
+  toast(`${d.icon} ${d.name} ${d.on?'ON':'OFF'} in ${r.name}`,d.on?'#10b981':'#ef4444');
+  _detailRoomId=null;renderAll();
+}
+function bulkToggle(roomId,state){
+  const r=rooms.find(x=>x.id===roomId);
+  r.devices.forEach(d=>{d.on=state;d.watt=state?d.base:0;});
+  syncToStorage();
+  toast(`${state?'All ON':'All OFF'} — ${r.name}`,state?'#10b981':'#ef4444');
+  _detailRoomId=null;renderAll();
+}
+function simulate(){
+  rooms.forEach(r=>{
+    r.devices.forEach(d=>{
+      d.watt=d.on?Math.round(d.base*(.93+Math.random()*.14)):0;
+      histDev[d.id][timePtr]=d.watt;
+    });
+    histRoom[r.id][timePtr]=r.devices.reduce((s,d)=>s+d.watt,0);
+  });
+  if(timePtr<HIST_LEN-1)timePtr++;
+  renderAll();
+}
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-IN');},1000);
+syncToStorage();
+renderAll();
+setInterval(simulate,5000); // 1 new data point every 5 seconds
+window.addEventListener('resize',()=>{
+  const c=document.getElementById('mainGraph');
+  if(c&&selRoom){const r=rooms.find(x=>x.id===selRoom);const gData=graphDevId?histDev[graphDevId]:histRoom[r.id];const gDev=graphDevId?r.devices.find(d=>d.id===graphDevId):null;const gColor=graphDevId?(gDev?.on?'#00e5ff':'#4a6080'):(rStatus(r)==='critical'?'#ef4444':rStatus(r)==='high'?'#f59e0b':'#00e5ff');drawChart(c,gData,gColor,timePtr);}
+});
+</script>
+</body>
+</html>
