@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnergyIQ — Room Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b14;--surface:#0e1420;--surface2:#151d2e;--surface3:#1c2638;
+  --border:#1e2d45;--border2:#243450;
+  --accent:#00e5ff;--accent2:#7c3aed;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --text:#e2e8f0;--muted:#4a6080;--muted2:#64748b;
+  --font:'Syne',sans-serif;--mono:'Space Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);
+  background-size:48px 48px;}
+header{position:fixed;top:0;left:0;right:0;z-index:300;height:58px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  background:rgba(7,11,20,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;}
+.logo-text{font-size:19px;font-weight:800;letter-spacing:-.5px;}
+.logo-text span{color:var(--accent);}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.dash-link{display:flex;align-items:center;gap:6px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);color:var(--accent);padding:6px 14px;border-radius:20px;font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;text-decoration:none;transition:all .2s;}
+.dash-link:hover{background:rgba(0,229,255,.15);}
+.sync-pill{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green);padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:10px;}
+.sync-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 58px);margin-top:58px;position:relative;z-index:1;}
+.sim-sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:16px;}
+.sim-sidebar::-webkit-scrollbar{width:3px;}
+.sim-sidebar::-webkit-scrollbar-thumb{background:var(--border);}
+.ctrl-hdr{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:12px;}
+.room-tabs{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.room-tab{padding:9px 11px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:transparent;display:flex;align-items:center;gap:8px;text-align:left;transition:all .18s;color:var(--text);font-family:var(--font);width:100%;}
+.room-tab:hover{background:var(--surface2);border-color:rgba(0,229,255,.3);}
+.room-tab.active{background:rgba(0,229,255,.06);border-color:var(--accent);}
+.rtab-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.rtab-name{font-size:11px;font-weight:600;flex:1;text-align:left;}
+.rtab-watt{font-family:var(--mono);font-size:10px;}
+.room-watt-box{margin-bottom:16px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;}
+.rwb-lbl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:5px;}
+.rwb-val{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1;margin-bottom:2px;}
+.rwb-cost{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:7px;}
+.rwb-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.rwb-fill{height:100%;border-radius:2px;transition:width .6s ease,background .3s;}
+.dev-sec-hdr{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:8px;}
+.dtr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(30,45,69,.5);}
+.dtr-icon{font-size:14px;width:22px;text-align:center;flex-shrink:0;}
+.dtr-info{flex:1;min-width:0;}
+.dtr-name{font-size:11px;font-weight:600;}
+.dtr-name.off{opacity:.4;}
+.dtr-w{font-size:9px;color:var(--muted2);font-family:var(--mono);}
+.toggle{position:relative;width:36px;height:19px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.t-track{position:absolute;inset:0;border-radius:10px;background:var(--border);cursor:pointer;transition:background .25s;border:1px solid var(--border2);}
+.toggle input:checked+.t-track{background:var(--green);border-color:var(--green);}
+.t-thumb{position:absolute;top:3px;left:3px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none;}
+.toggle input:checked~.t-thumb{transform:translateX(17px);}
+.scene-area{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+.room-scene{position:relative;width:min(680px,88vw);height:min(470px,72vh);border:2px solid var(--border);border-radius:4px;overflow:hidden;}
+
+/* scene elements */
+.s-ceiling{position:absolute;top:0;left:0;right:0;height:13px;background:#060a12;border-bottom:2px solid #1e2d45;}
+.s-wall-l{position:absolute;top:0;bottom:18%;left:0;width:13px;background:linear-gradient(90deg,#060a12,#0f1825);border-right:1px solid #1e2d45;}
+.s-wall-r{position:absolute;top:0;bottom:18%;right:0;width:13px;background:linear-gradient(270deg,#060a12,#0f1825);border-left:1px solid #1e2d45;}
+.s-floor{position:absolute;bottom:0;left:0;right:0;height:18%;background:linear-gradient(180deg,#18202e,#0e1420);border-top:2px solid #2a3a55;}
+.s-floor::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0,rgba(255,255,255,.022) 1px,transparent 1px,transparent 65px);}
+
+/* light */
+.s-light{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);}
+.s-cord{width:2px;height:30px;transition:background .4s;}
+.s-bulb{width:20px;height:20px;border-radius:50%;transition:all .5s;}
+.s-light.on .s-cord{background:#5a7090;}
+.s-light.off .s-cord{background:#1e2d45;}
+.s-light.on .s-bulb{background:radial-gradient(circle at 38% 35%,#fffde7,#ffe082,#ffb300);box-shadow:0 0 18px 7px rgba(255,224,130,.55),0 0 55px 18px rgba(255,193,7,.22);}
+.s-light.off .s-bulb{background:#161f2e;box-shadow:none;}
+
+/* fan */
+.s-fan{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);}
+.s-fan-rod{width:3px;height:26px;background:#1a2535;transition:background .3s;}
+.s-fan.on .s-fan-rod{background:#3a5070;}
+.s-fan-hub{width:20px;height:20px;border-radius:50%;background:#1a2535;border:2px solid #2a3a55;position:relative;z-index:2;flex-shrink:0;transition:all .3s;}
+.s-fan.on .s-fan-hub{background:#253a55;border-color:#3a5a80;box-shadow:0 0 8px rgba(0,180,255,.12);}
+.s-blades-wrap{position:absolute;}
+.s-fan.on .s-blades-wrap{animation:spin var(--spd,.5s) linear infinite;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.s-blade{position:absolute;background:#18304a;border-radius:40% 60% 60% 40%;border:1px solid rgba(255,255,255,.03);}
+.s-fan.on .s-blade{background:#264060;}
+
+/* ac */
+.s-ac{position:absolute;border-radius:7px 7px 4px 4px;background:linear-gradient(180deg,#172030,#0f1825);border:2px solid #1e2d45;overflow:hidden;transition:all .4s;}
+.s-ac.on{border-color:rgba(0,229,255,.35);box-shadow:0 0 14px rgba(0,229,255,.1);}
+.s-vent{height:5px;margin:3px 5px;border-radius:2px;background:repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(60,100,140,.2) 3px,rgba(60,100,140,.2) 4px);transition:all .4s;}
+.s-ac.on .s-vent{background:repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,229,255,.45) 3px,rgba(0,229,255,.45) 4px);}
+.s-ac-led{width:5px;height:5px;border-radius:50%;position:absolute;bottom:4px;right:6px;background:#152030;transition:all .3s;}
+.s-ac.on .s-ac-led{background:var(--green);box-shadow:0 0 5px var(--green);}
+@keyframes drift{0%{transform:translateX(0) translateY(0);opacity:.45}100%{transform:translateX(-68px) translateY(8px);opacity:0}}
+.s-air{position:absolute;width:16px;height:1px;background:rgba(0,229,255,.38);border-radius:1px;animation:drift 1.7s linear infinite;}
+
+/* monitor */
+.s-mon{position:absolute;border-radius:4px 4px 2px 2px;background:#0b1420;border:2px solid #1e2d45;transition:all .4s;overflow:hidden;}
+.s-mon.on{border-color:rgba(0,229,255,.28);box-shadow:0 0 10px rgba(0,229,255,.08);}
+.s-mon-screen{position:absolute;inset:0;background:#06101a;transition:all .4s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:5px;}
+.s-mon.on .s-mon-screen{background:linear-gradient(135deg,#0d2040,#051525);}
+.s-scr-ln{height:2px;background:transparent;border-radius:1px;transition:background .4s;}
+.s-mon.on .s-scr-ln{background:rgba(0,229,255,.32);}
+.s-mon.on .s-scr-ln:nth-child(2){background:rgba(0,229,255,.18);width:70%;}
+.s-mon.on .s-scr-ln:nth-child(3){background:rgba(0,229,255,.13);width:55%;}
+
+/* projector */
+.s-proj{position:absolute;width:18px;height:11px;border-radius:3px;background:linear-gradient(90deg,#1a2840,#121e30);border:1px solid #2a3a55;transition:all .3s;}
+.s-proj.on{border-color:rgba(255,220,80,.38);box-shadow:0 0 8px rgba(255,220,80,.12);}
+.s-proj-screen{position:absolute;background:#0c1520;border:2px solid #1e2d45;border-radius:2px;overflow:hidden;transition:all .4s;}
+.s-proj-screen.on{background:linear-gradient(135deg,#182a40,#0e1e30);border-color:rgba(100,180,255,.18);box-shadow:0 0 18px rgba(100,180,255,.07);}
+
+/* label */
+.s-lbl{position:absolute;background:rgba(6,10,18,.9);border:1px solid #1e2d45;border-radius:4px;padding:2px 6px;font-size:8px;font-family:var(--mono);color:var(--muted2);pointer-events:none;white-space:nowrap;transition:all .3s;}
+.s-lbl.on{color:var(--accent);border-color:rgba(0,229,255,.22);}
+
+.toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;border-radius:9px;font-size:11px;font-family:var(--mono);display:flex;align-items:center;gap:7px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏠</div>
+    <div class="logo-text">Room <span>Sim</span></div>
+  </div>
+  <div class="hdr-right">
+    <a class="dash-link" href="energyiq_dashboard.html">⚡ Dashboard ↗</a>
+    <div class="sync-pill"><div class="sync-dot"></div>SYNCED</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="sim-sidebar">
+    <div class="ctrl-hdr">Select Room</div>
+    <div class="room-tabs" id="roomTabs"></div>
+    <div class="room-watt-box">
+      <div class="rwb-lbl">Consumption</div>
+      <div class="rwb-val" id="rwbVal" style="color:var(--accent)">--W</div>
+      <div class="rwb-cost" id="rwbCost">₹-- / hr</div>
+      <div class="rwb-bar"><div class="rwb-fill" id="rwbFill" style="width:0%"></div></div>
+    </div>
+    <div class="dev-sec-hdr">Device Controls</div>
+    <div id="devToggles"></div>
+  </div>
+  <div class="scene-area">
+    <div class="room-scene" id="roomScene"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot" id="toastDot"></div><span id="toastMsg"></span></div>
+
+<script>
+const rooms=[
+  {id:1,name:"CS Lab 101",floor:"Ground Floor",block:"Block A",capacity:10500,
+   devices:[
+    {id:'d1a',name:"Computers (30)",icon:"🖥️",base:6000,on:true,type:'computer'},
+    {id:'d1b',name:"AC Unit",icon:"❄️",base:3250,on:true,type:'ac'},
+    {id:'d1c',name:"LED Lights",icon:"💡",base:690,on:true,type:'light'},
+    {id:'d1d',name:"Projector",icon:"📽️",base:25,on:true,type:'projector'},
+    {id:'d1e',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+  ]},
+  {id:2,name:"Lecture Hall A",floor:"Ground Floor",block:"Block A",capacity:12000,
+   devices:[
+    {id:'d2a',name:"AC Units (2)",icon:"❄️",base:6500,on:true,type:'ac'},
+    {id:'d2b',name:"LED Lights",icon:"💡",base:1150,on:true,type:'light'},
+    {id:'d2c',name:"Projector",icon:"📽️",base:25,on:true,type:'projector'},
+    {id:'d2d',name:"Ceiling Fans (4)",icon:"🌀",base:300,on:false,type:'fan'},
+    {id:'d2e',name:"Sound System",icon:"🔊",base:25,on:false,type:'other'},
+  ]},
+  {id:3,name:"Staff Room",floor:"1st Floor",block:"Block A",capacity:8000,
+   devices:[
+    {id:'d3a',name:"Computers (8)",icon:"🖥️",base:1600,on:true,type:'computer'},
+    {id:'d3b',name:"AC Unit",icon:"❄️",base:1200,on:false,type:'ac'},
+    {id:'d3c',name:"LED Lights",icon:"💡",base:100,on:true,type:'light'},
+    {id:'d3d',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+    {id:'d3e',name:"Water Dispenser",icon:"🚰",base:100,on:true,type:'other'},
+  ]},
+  {id:4,name:"Physics Lab",floor:"1st Floor",block:"Block B",capacity:4000,
+   devices:[
+    {id:'d4a',name:"Lab Equipment",icon:"🔬",base:1800,on:true,type:'other'},
+    {id:'d4b',name:"AC Unit",icon:"❄️",base:1800,on:true,type:'ac'},
+    {id:'d4c',name:"LED Lights",icon:"💡",base:230,on:true,type:'light'},
+    {id:'d4d',name:"Ceiling Fan",icon:"🌀",base:75,on:true,type:'fan'},
+    {id:'d4e',name:"Fume Hood",icon:"💨",base:120,on:true,type:'other'},
+  ]},
+  {id:5,name:"Server Room",floor:"Basement",block:"Block B",capacity:7000,
+   devices:[
+    {id:'d5a',name:"Server Racks (5)",icon:"🖧",base:2500,on:true,type:'computer'},
+    {id:'d5b',name:"Precision AC",icon:"❄️",base:3800,on:true,type:'ac'},
+    {id:'d5c',name:"UPS Systems",icon:"🔋",base:200,on:true,type:'other'},
+    {id:'d5d',name:"LED Lights",icon:"💡",base:65,on:true,type:'light'},
+    {id:'d5e',name:"Exhaust Fan",icon:"🌀",base:120,on:true,type:'fan'},
+  ]},
+];
+
+let selRoomId=1;
+const rWatt=r=>r.devices.filter(d=>d.on).reduce((s,d)=>s+d.base,0);
+function dotC(r){const p=rWatt(r)/r.capacity;return p>.85?'#ef4444':p>.55?'#f59e0b':'#10b981';}
+const costHr=w=>((w/1000)*7).toFixed(2);
+
+// ── SYNC ──
+function loadFromStorage(){
+  try{
+    const s=JSON.parse(localStorage.getItem('energyiq_state')||'{}');
+    rooms.forEach(r=>{
+      if(s[r.id])r.devices.forEach(d=>{if(s[r.id][d.id]!==undefined)d.on=s[r.id][d.id];});
+    });
+  }catch(e){}
+}
+function saveToStorage(){
+  const s={};
+  rooms.forEach(r=>{s[r.id]={};r.devices.forEach(d=>{s[r.id][d.id]=d.on;});});
+  localStorage.setItem('energyiq_state',JSON.stringify(s));
+  localStorage.setItem('energyiq_ts',Date.now().toString());
+}
+window.addEventListener('storage',e=>{
+  if(e.key==='energyiq_state'){loadFromStorage();renderAll();}
+});
+
+let toastT;
+function toast(msg,col='#10b981'){
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toastDot').style.background=col;
+  const el=document.getElementById('toast');
+  el.classList.add('show');clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+function renderSidebar(){
+  const r=rooms.find(x=>x.id===selRoomId);
+  const w=rWatt(r),p=Math.min((w/r.capacity)*100,100);
+  const fc=p>85?'#ef4444':p>55?'#f59e0b':'#10b981';
+  document.getElementById('rwbVal').textContent=w+'W';
+  document.getElementById('rwbVal').style.color=fc;
+  document.getElementById('rwbCost').textContent=`₹${costHr(w)} / hr`;
+  document.getElementById('rwbFill').style.width=p+'%';
+  document.getElementById('rwbFill').style.background=fc;
+  document.getElementById('roomTabs').innerHTML=rooms.map(rm=>`
+    <button class="room-tab ${rm.id===selRoomId?'active':''}" onclick="selRoom(${rm.id})">
+      <div class="rtab-dot" style="background:${dotC(rm)}"></div>
+      <div class="rtab-name">${rm.name}</div>
+      <div class="rtab-watt" style="color:${dotC(rm)}">${rWatt(rm)}W</div>
+    </button>`).join('');
+  document.getElementById('devToggles').innerHTML=r.devices.map(d=>`
+    <div class="dtr">
+      <div class="dtr-icon">${d.icon}</div>
+      <div class="dtr-info"><div class="dtr-name ${d.on?'':'off'}">${d.name}</div><div class="dtr-w">${d.on?d.base+'W':'0W'}</div></div>
+      <label class="toggle">
+        <input type="checkbox" ${d.on?'checked':''} onchange="toggleDev(${r.id},'${d.id}',this.checked)">
+        <div class="t-track"></div><div class="t-thumb"></div>
+      </label>
+    </div>`).join('');
+}
+
+function buildScene(){
+  const scene=document.getElementById('roomScene');
+  if(!scene)return;
+  const W=scene.offsetWidth||680,H=scene.offsetHeight||470;
+  const flH=H*.18;
+  const r=rooms.find(x=>x.id===selRoomId);
+  const lights=r.devices.filter(d=>d.type==='light');
+  const fans=r.devices.filter(d=>d.type==='fan');
+  const acs=r.devices.filter(d=>d.type==='ac');
+  const computers=r.devices.filter(d=>d.type==='computer');
+  const projectors=r.devices.filter(d=>d.type==='projector');
+  const lightOn=lights.some(d=>d.on),fanOn=fans.some(d=>d.on);
+  const acOn=acs.some(d=>d.on),compOn=computers.some(d=>d.on),projOn=projectors.some(d=>d.on);
+  const ambBg=lightOn?'linear-gradient(180deg,#14202e 0%,#0c1826 50%,#08101a 100%)':'linear-gradient(180deg,#070b14 0%,#070b14 100%)';
+
+  let html=`
+    <div style="position:absolute;inset:0;background:${ambBg};transition:background .7s;"></div>
+    <div class="s-ceiling"></div>
+    <div class="s-wall-l"></div>
+    <div class="s-wall-r"></div>
+    <div class="s-floor"></div>
+  `;
+  if(lightOn)html+=`<div style="position:absolute;bottom:${flH}px;left:0;right:0;height:110px;background:linear-gradient(0deg,rgba(255,195,55,.035),transparent);pointer-events:none;"></div>`;
+
+  // LIGHTS
+  const nL=Math.min(lights.length+1,4);
+  for(let i=0;i<nL;i++){
+    const x=(W/(nL+1))*(i+1);
+    html+=`
+      <div class="s-light ${lightOn?'on':'off'}" style="position:absolute;left:${x}px;top:13px;">
+        <div class="s-cord"></div>
+        <div class="s-bulb"></div>
+        ${lightOn?`<div style="position:absolute;top:52px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,205,70,.08),transparent 70%);left:-80px;pointer-events:none;"></div>`:''}
+      </div>
+      <div class="s-lbl ${lightOn?'on':''}" style="left:${x-14}px;top:68px;">${lightOn?'ON':'OFF'}</div>
+    `;
+  }
+
+  // FANS
+  const nF=Math.min(fans.length,2);
+  const fanXs=nF===1?[W/2]:nF===2?[W*.3,W*.7]:[W*.25,W*.5,W*.75];
+  const bLen=42,bW=12;
+  for(let i=0;i<nF;i++){
+    const fx=fanXs[i];
+    const spd=fans[0]?.base>200?'.38s':'.65s';
+    html+=`
+      <div class="s-fan ${fanOn?'on':'off'}" style="position:absolute;left:${fx}px;top:13px;--spd:${spd};">
+        <div class="s-fan-rod"></div>
+        <div style="position:relative;width:${bLen*2}px;height:${bLen*2}px;display:flex;align-items:center;justify-content:center;">
+          <div class="s-fan-hub" style="position:absolute;z-index:2;"></div>
+          <div class="s-blades-wrap" style="position:absolute;top:0;left:0;width:${bLen*2}px;height:${bLen*2}px;">
+            ${[0,90,180,270].map(a=>`<div class="s-blade" style="position:absolute;width:${bLen}px;height:${bW}px;top:${bLen-bW/2}px;left:${bLen}px;transform:rotate(${a}deg);transform-origin:-1px ${bW/2}px;"></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="s-lbl ${fanOn?'on':''}" style="left:${fx-18}px;top:${13+26+bLen*2+4}px;">${fanOn?'SPINNING':'STOPPED'}</div>
+    `;
+  }
+
+  // AC
+  if(acs.length>0){
+    const ax=W-96,ay=Math.round(H*.22);
+    html+=`
+      <div class="s-ac ${acOn?'on':'off'}" style="position:absolute;left:${ax}px;top:${ay}px;width:78px;height:28px;">
+        <div class="s-vent"></div><div class="s-vent"></div>
+        <div class="s-ac-led"></div>
+      </div>
+      <div class="s-lbl ${acOn?'on':''}" style="left:${ax}px;top:${ay+32}px;">${acOn?'❄️ COOLING':'AC OFF'}</div>
+    `;
+    if(acOn){
+      for(let p=0;p<6;p++){
+        html+=`<div class="s-air" style="position:absolute;left:${ax-4}px;top:${ay+6+p*4}px;animation-delay:${p*.27}s;"></div>`;
+      }
+    }
+  }
+
+  // COMPUTERS
+  if(computers.length>0){
+    const nC=3,mW=50,mH=36,stH=12;
+    const startX=(W-nC*(mW+18))/2;
+    const deskY=H-flH;
+    html+=`<div style="position:absolute;bottom:${flH}px;left:${startX-14}px;width:${nC*(mW+18)+12}px;height:5px;background:#1e2d45;border-radius:2px;"></div>`;
+    for(let i=0;i<nC;i++){
+      const mx=startX+i*(mW+18),my=deskY-mH-stH-5;
+      html+=`
+        <div class="s-mon ${compOn?'on':'off'}" style="position:absolute;left:${mx}px;top:${my}px;width:${mW}px;height:${mH}px;">
+          <div class="s-mon-screen">
+            <div class="s-scr-ln" style="width:88%"></div>
+            <div class="s-scr-ln" style="width:70%"></div>
+            <div class="s-scr-ln" style="width:58%"></div>
+          </div>
+        </div>
+        <div style="position:absolute;left:${mx+mW/2-1}px;top:${my+mH}px;width:3px;height:${stH}px;background:#1e2d45;"></div>
+        <div style="position:absolute;left:${mx+mW/2-13}px;top:${my+mH+stH}px;width:26px;height:3px;background:#1e2d45;border-radius:2px;"></div>
+      `;
+    }
+    if(compOn)html+=`<div class="s-lbl on" style="left:${startX}px;top:${deskY-mH-stH-20}px;">🖥️ ACTIVE</div>`;
+  }
+
+  // PROJECTOR
+  if(projectors.length>0){
+    const px=W*.13,py=H*.32;
+    const sW=W*.2,sH=H*.16,sx=W*.62,sy=H*.1;
+    html+=`
+      <div class="s-proj ${projOn?'on':'off'}" style="position:absolute;left:${px}px;top:${py}px;"></div>
+      <div class="s-proj-screen ${projOn?'on':''}" style="position:absolute;left:${sx}px;top:${sy}px;width:${sW}px;height:${sH}px;">
+        ${projOn?`<div style="position:absolute;inset:0;padding:5px;display:flex;flex-direction:column;gap:2px;justify-content:center;">
+          <div style="height:2px;background:rgba(100,180,255,.35);border-radius:1px;width:80%"></div>
+          <div style="height:2px;background:rgba(100,180,255,.2);border-radius:1px;width:62%"></div>
+          <div style="height:2px;background:rgba(100,180,255,.15);border-radius:1px;width:72%"></div>
+        </div>`:''}
+      </div>
+    `;
+    if(projOn){
+      const beamA=Math.atan2(sy+sH/2-(py+5),sx-(px+18))*180/Math.PI;
+      const beamL=Math.sqrt(Math.pow(sx-(px+18),2)+Math.pow(sy+sH/2-(py+5),2));
+      html+=`
+        <div style="position:absolute;left:${px+18}px;top:${py+4}px;width:${beamL}px;height:1px;background:linear-gradient(90deg,rgba(255,215,70,.38),rgba(255,215,70,.04));transform:rotate(${beamA}deg);transform-origin:left center;pointer-events:none;"></div>
+        <div style="position:absolute;left:${px+18}px;top:${py+1}px;width:${beamL}px;height:7px;background:linear-gradient(180deg,transparent,rgba(255,215,70,.06),transparent);transform:rotate(${beamA}deg);transform-origin:left center;pointer-events:none;"></div>
+        <div class="s-lbl on" style="left:${px}px;top:${py+15}px;">📽️ ON</div>
+      `;
+    }else{
+      html+=`<div class="s-lbl" style="left:${px}px;top:${py+15}px;">📽️ OFF</div>`;
+    }
+  }
+
+  scene.innerHTML=html;
+}
+
+function selRoom(id){selRoomId=id;renderAll();}
+function toggleDev(roomId,devId,state){
+  const r=rooms.find(x=>x.id===roomId),d=r.devices.find(x=>x.id===devId);
+  d.on=state;
+  saveToStorage();
+  toast(`${d.icon} ${d.name} ${d.on?'ON':'OFF'}`,d.on?'#10b981':'#ef4444');
+  renderAll();
+}
+function renderAll(){renderSidebar();buildScene();}
+
+// Poll for dashboard changes every 1.2s
+let lastTs='';
+setInterval(()=>{
+  const ts=localStorage.getItem('energyiq_ts')||'';
+  if(ts&&ts!==lastTs){lastTs=ts;loadFromStorage();renderAll();}
+},1200);
+
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-IN');},1000);
+loadFromStorage();
+renderAll();
+window.addEventListener('resize',buildScene);
+</script>
+</body>
+</html>

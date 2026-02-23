@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — EnergyIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b14;--surface:#0e1420;--border:#1e2d45;--accent:#00e5ff;--accent2:#7c3aed;--text:#e2e8f0;--muted:#4a6080;--muted2:#64748b;--font:'Syne',sans-serif;--mono:'Space Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,229,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.018) 1px,transparent 1px);background-size:52px 52px;}
+.wrap{position:relative;z-index:1;padding:40px;}
+.code{font-family:var(--mono);font-size:clamp(80px,15vw,140px);font-weight:700;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+h1{font-size:clamp(20px,3vw,28px);font-weight:700;margin-bottom:12px;}
+p{color:var(--muted2);font-size:15px;margin-bottom:36px;max-width:380px;margin-left:auto;margin-right:auto;}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+a.home{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),#00b8d4);color:#070b14;padding:12px 28px;border-radius:24px;font-family:var(--mono);font-size:11px;letter-spacing:1.5px;font-weight:700;text-decoration:none;transition:all .25s;box-shadow:0 0 28px rgba(0,229,255,.3);}
+a.home:hover{transform:translateY(-2px);box-shadow:0 0 44px rgba(0,229,255,.45);}
+a.dash{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--border);color:var(--text);padding:11px 24px;border-radius:24px;font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-decoration:none;transition:all .2s;}
+a.dash:hover{border-color:rgba(0,229,255,.4);color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="code">404</div>
+  <h1>Page Not Found</h1>
+  <p>The page you're looking for doesn't exist. Head back to the EnergyIQ dashboard.</p>
+  <div class="btns">
+    <a class="home" href="/EnergyIQ/">⚡ Home</a>
+    <a class="dash" href="/EnergyIQ/energyiq_dashboard.html">Dashboard ↗</a>
+  </div>
+</div>
+</body>
+</html>
